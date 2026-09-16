@@ -1,0 +1,7 @@
+# hello-agent v1 的依赖，故意保持极简，只有三个：
+#   openai          —— 官方 SDK，用它的 OpenAI 兼容客户端调模型
+#   python-dotenv   —— 把 .env 里的配置读进环境变量
+#   rich            —— 让终端输出好看一点（尤其是把工具调用过程高亮出来）
+openai>=1.30.0
+python-dotenv>=1.0.0
+rich>=13.0.0

@@ -1,0 +1,14 @@
+# 虚拟环境
+.venv/
+venv/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 密钥：绝对不能提交
+.env
+
+# Agent 通过 save_note 工具写出来的笔记
+notes/
+.vscode/
