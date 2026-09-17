@@ -1,0 +1,9 @@
+# hello-agent v4 的依赖，和 v1~v3 完全一致 ——
+# 持久化用的是标准库的 json + os（原子写就是 os.replace），没有引入任何新依赖。
+#
+#   openai          —— 官方 SDK，用它的 OpenAI 兼容客户端调模型
+#   python-dotenv   —— 把 .env 里的配置读进环境变量
+#   rich            —— 终端高亮，尤其是把压缩 / 存盘过程显示出来
+openai>=1.30.0
+python-dotenv>=1.0.0
+rich>=13.0.0

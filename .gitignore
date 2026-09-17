@@ -11,4 +11,8 @@ __pycache__/
 
 # Agent 通过 save_note 工具写出来的笔记
 notes/
+
+# v4 起：Agent 的会话文件（运行时数据，每次聊天都会变）
+# 连同 .corrupt（坏文件备份）和 .tmp（原子写的临时文件）一起忽略
+agent-v*/session.json*
 .vscode/
