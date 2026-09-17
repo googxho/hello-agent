@@ -25,6 +25,7 @@ LLM 本身只是一个「文本进、文本出」的函数。它不会算术、�
 
     python agent.py              # 进入交互对话
     python agent.py --selftest   # 只测工具，不调 LLM（不需要 API Key）
+    python agent.py --config     # 看配置从哪来、当前生效的值是什么
 """
 
 from __future__ import annotations
@@ -48,9 +49,32 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from rich.console import Console
 from rich.panel import Panel
+from rich.text import Text
 
-# 读取与本文件同目录的 .env，把里面的键值对塞进 os.environ
-load_dotenv()
+# ── 配置从哪来 ────────────────────────────────────────────────────────
+# 密钥和模型配置统一放在【仓库根目录】的 .env 里，所有版本共用一份，
+# 不必每个版本目录都复制一遍。
+#
+# 加载优先级（靠前的不会被后面的覆盖）：
+#     1. 真实环境变量       LLM_MODEL=xxx python agent.py
+#     2. 本目录的 .env      （可选）只放这个版本想覆盖的项
+#     3. 仓库根的 .env      ← 平时只动这一个
+_HERE = Path(__file__).resolve().parent
+
+
+def _find_repo_root() -> Path:
+    """从本文件所在目录往上找，直到找到含 .git 的仓库根。"""
+    for candidate in _HERE.parents:
+        if (candidate / ".git").exists():
+            return candidate
+    return _HERE.parent  # 找不到就退回上一级，尽力而为
+
+
+# 两次都用默认的 override=False，这一条很关键：
+#   · 真实环境变量永远不会被文件覆盖
+#   · 仓库根的 .env 也不会覆盖本目录的 .env
+load_dotenv(_HERE / ".env")
+load_dotenv(_find_repo_root() / ".env")
 
 # 单次提问内，最多允许「调用工具 → 回灌结果 → 再问一轮」循环多少次。
 # 这是防止 Agent 陷入死循环、把你的 API 额度烧光的保险丝。
@@ -462,6 +486,34 @@ def _error_hint(exc: Exception) -> str:
     return ""
 
 
+def _describe_config() -> str:
+    """给 --config 用：配置从哪来、当前生效的值是什么。
+
+    排查「为什么我的配置没生效」时，先看这里。
+    """
+    lines = ["配置文件（优先级从低到高）："]
+    for path, note in (
+        (_find_repo_root() / ".env", "共享层 · 全项目一份，放密钥等公共配置"),
+        (_HERE / ".env", "本版本层 · 可选，放 v1 想单独覆盖的项"),
+    ):
+        exists = path.is_file()
+        suffix = "" if exists else "   （不存在，这是正常的）"
+        lines.append(f"  {'✓' if exists else '✗'}  {path}{suffix}")
+        lines.append(f"       {note}")
+
+    lines += [
+        "",
+        "本版本读取的配置项：",
+        "",
+        f"  {'LLM_API_KEY':<22} {'(已设置)' if API_KEY else '(未设置 ✗)':<18} [共享]",
+        f"  {'LLM_BASE_URL':<22} {BASE_URL:<18} [共享]",
+        f"  {'LLM_MODEL':<22} {MODEL:<18} [共享]",
+        "",
+        "v1 只读上面这三项。上下文管理等参数是 v2 才引入的能力，v1 不读。",
+    ]
+    return "\n".join(lines)
+
+
 def _banner() -> Panel:
     return Panel(
         "[bold]hello-agent[/bold] v1 · 最小可运行 Agent\n"
@@ -503,6 +555,12 @@ def selftest() -> int:
 def main(argv: list[str]) -> int:
     if "--selftest" in argv:
         return selftest()
+
+    if "--config" in argv:
+        # 用 Text 而不是字符串：配置报告里有 "[共享]" 这种方括号，
+        # 直接交给 rich 会被当成样式标记解析掉。
+        console.print(Panel(Text(_describe_config()), border_style="cyan", title="当前配置"))
+        return 0
 
     if "--help" in argv or "-h" in argv:
         console.print(__doc__)

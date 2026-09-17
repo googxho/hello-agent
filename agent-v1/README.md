@@ -34,27 +34,55 @@ myenv 是 ~/.zshrc 里定义的别名：  source .../jupyterlab/myenv/bin/activa
 # 1. 激活虚拟环境
 myenv
 
-# 2. 进入项目，确认依赖齐全
+# 2. 配置密钥 —— 只需做一次，全项目共用这一份
+cd ..
+cp .env.example .env
+#    打开仓库根的 .env，把 LLM_API_KEY 填上
+
+# 3. 进入项目，确认依赖齐全
 cd agent-v1
 pip install -r requirements.txt     # openai / python-dotenv / rich
 
-# 3. 先跑工具层自检 —— 这一步不需要 API Key
+# 4. 先跑工具层自检 —— 这一步不需要 API Key
 python agent.py --selftest
-
-# 4. 配置密钥
-cp .env.example .env
-#    打开 .env，把 LLM_API_KEY 填上
 
 # 5. 开始对话
 python agent.py
 ```
 
 > 💡 也可以在 VS Code 里 `Cmd+Shift+P` → `Tasks: Run Task`，
-> 用项目预置的三个任务（检查依赖 / 工具层自检 / 启动对话）。
+> 用项目预置的任务（v1/v2 各自的启动与自检）。
 
-想换模型？只改 `.env` 里的 `LLM_BASE_URL` 和 `LLM_MODEL` 两行，代码一行都不用动。
-默认走 DeepSeek，也支持 OpenAI、通义千问、月之暗面、本地 Ollama 等任何
-OpenAI 兼容接口。
+### 配置怎么组织：分两层，各归各位
+
+不用每个版本复制 `.env`，也不会出现「v1 得忍受 v2 的参数」：
+
+| 层 | 文件 | 放什么 | 谁在用 |
+|---|---|---|---|
+| **共享层** | `<仓库根>/.env` | 密钥、接口地址、模型名 | 所有版本 |
+| **版本层** | `agent-v1/.env` | v1 独有的调参 | 可选，不存在也没关系 |
+
+判断标准只有一句话：**「换个版本，这一项会不会变？」**
+
+- 「连哪家 API、用哪个模型」→ 换版本不会变 → 共享层
+- 「v1 自己特有的参数」→ **v1 现在一个都没有**，所以这个文件根本不需要创建
+
+加载优先级（靠前的不会被后面的覆盖）：
+
+| 优先级 | 来源 | 用途 |
+|---|---|---|
+| 1（最高） | 真实环境变量 | `LLM_MODEL=xxx python agent.py` 一次性实验 |
+| 2 | `agent-v1/.env` | 可选，只放这个版本想覆盖的项 |
+| 3（兜底） | `<仓库根>/.env` | ⭐ 平时只动这一个 |
+
+想知道当前到底读到了什么？直接问它：
+
+```bash
+python agent.py --config
+```
+
+会打印出「加载了哪几个文件、每一项当前是什么值、属于谁」—— 排查配置没生效时，
+先看这个。
 
 > ⚠️ 必须选一个**支持 tool calling（函数调用）**的模型，否则 Agent 跑不起来。
 
@@ -126,7 +154,7 @@ flowchart TD
 
 | 段落 | 内容 | 学习重点 |
 |---|---|---|
-| **§1 配置** | 读 `.env`，拿到密钥 / 地址 / 模型名 | 显式传参而非依赖 SDK 读环境变量，看见 key 的去向 |
+| **§1 配置** | 读仓库根的 `.env`，拿到密钥 / 地址 / 模型名 | 显式传参而非依赖 SDK 读环境变量，看见 key 的去向 |
 | **§2 工具协议** | `ToolDefinition` / `ToolParameter` | ⭐ **工具描述就是写给 LLM 的提示词** |
 | **§3 三个工具** | 每个演示一种 LLM 做不到的能力 | 能力边界 / 知识边界 / 副作用能力 |
 | **§4 主循环** | `Agent.run()` | ⭐ 全篇核心，只有 40 行 |
@@ -184,8 +212,8 @@ LLM 是概率模型，它「算」乘法其实是在猜下一个 token，长数�
 ## 常见问题
 
 **Q：报 401 / API Key 无效**
-`.env` 里的 `LLM_API_KEY` 没填，或者填错了。注意 `.env` 要和 `agent.py` 在同一个
-目录下。
+**仓库根目录** `.env` 里的 `LLM_API_KEY` 没填，或者填错了。
+注意不是 `agent-v1/` 目录下 —— 是全项目共用的那一份。
 
 **Q：`pip install` 报 `IncompleteRead` / `RemoteDisconnected`**
 网络问题，不是代码问题。你 `~/.zshrc` 里有现成的代理别名，开代理再装：
