@@ -15,4 +15,7 @@ notes/
 # v4 起：Agent 的会话文件（运行时数据，每次聊天都会变）
 # 连同 .corrupt（坏文件备份）和 .tmp（原子写的临时文件）一起忽略
 agent-v*/session.json*
+
+# v6 起：向量缓存（能重新算出来，而且是运行时数据 —— 不该进版本库）
+agent-v*/embedding-cache.json*
 .vscode/
