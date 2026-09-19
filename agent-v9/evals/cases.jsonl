@@ -1,0 +1,15 @@
+# 用例集：一行一个用例（JSONL）。
+# 格式：{"id": 用例名, "prompt": 问什么, "checks": [期望1, 期望2, ...]}
+# 检查类型见 evaluator.py 的 CHECK_TYPES；改完这个文件，跑 python main.py --eval 就行。
+#
+# 判定小贴士：能写成规则的（包含什么字、调没调工具、有没有生成文件）优先用规则；
+# 规则表达不了的（语气、通俗度）才用 llm_judge —— 裁判要花钱，而且也要校准。
+{"id": "calc-big", "prompt": "算一下 1234 × 5678 + 90 等于多少？", "checks": [{"type": "tool_called", "name": "calculator"}, {"type": "answer_contains", "value": "7006742"}]}
+{"id": "calc-decimal", "prompt": "3.11 乘以 7.62 等于多少？请保留两位小数。", "checks": [{"type": "tool_called", "name": "calculator"}, {"type": "answer_regex", "value": "23\\.7"}]}
+{"id": "time-today", "prompt": "今天是几号？现在是星期几？", "checks": [{"type": "tool_called", "name": "get_current_time"}, {"type": "answer_regex", "value": "星期[一二三四五六日天]"}]}
+{"id": "save-note", "prompt": "把「周五交作业」记成一条笔记，标题用 homework。", "checks": [{"type": "tool_called", "name": "save_note"}, {"type": "file_exists", "value": "homework.md"}]}
+{"id": "multi-step", "prompt": "先看看现在几点，然后把这句提醒存成一条笔记：「该休息一下了」，标题用 break。", "checks": [{"type": "tool_called", "name": "get_current_time"}, {"type": "tool_called", "name": "save_note"}]}
+{"id": "no-tool-404", "prompt": "不要调用任何工具，直接用一句话解释 404 是什么意思。", "checks": [{"type": "no_tools"}, {"type": "answer_contains", "value": "404"}]}
+{"id": "no-tool-paris", "prompt": "法国的首都是哪里？直接回答，不用工具。", "checks": [{"type": "no_tools"}, {"type": "answer_contains", "value": "巴黎"}]}
+{"id": "format-keyword", "prompt": "用一句话介绍你自己，句子里必须出现「工具」这个词。", "checks": [{"type": "answer_contains", "value": "工具"}]}
+{"id": "judge-token", "prompt": "像给完全不懂技术的朋友解释一样，讲讲大模型里的 token 是什么。", "checks": [{"type": "llm_judge", "criterion": "解释通俗、有比喻或具体例子，没有堆砌术语；读者定位是完全的外行。"}]}

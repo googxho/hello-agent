@@ -18,4 +18,7 @@ agent-v*/session.json*
 
 # v6 起：向量缓存（能重新算出来，而且是运行时数据 —— 不该进版本库）
 agent-v*/embedding-cache.json*
+
+# v9 起：评估运行记录（每次跑都会变；对比靠磁盘上最新一份，不进版本库）
+agent-v9/runs/
 .vscode/

@@ -1,0 +1,9 @@
+# hello-agent v9 的依赖 —— 和 v1 完全相同，零新增：
+#   openai          —— 官方 SDK，用它的 OpenAI 兼容客户端调模型
+#   python-dotenv   —— 把 .env 里的配置读进环境变量
+#   rich            —— 让终端输出好看一点（这次的成绩单和对比面板都靠它）
+#
+# 评估器本身零依赖：判定是纯 Python（连 pytest 都没用，自检就在 main.py 里）。
+openai>=1.30.0
+python-dotenv>=1.0.0
+rich>=13.0.0
