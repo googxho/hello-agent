@@ -1,0 +1,15 @@
+# hello-agent v11 的依赖 —— 第一次引入第三方框架（这就是这一版的主题）：
+#
+#   langchain        —— 组件层的门面包：消息 / 工具 / agents 门面（create_agent）
+#   langchain-core   —— 组件协议本体（Runnable / Message / Tool）—— 显式写出，它是主角
+#   langchain-openai —— ChatOpenAI（DeepSeek 走 OpenAI 兼容接口，换家只改 .env）
+#   langgraph        —— v11 只是「看见」它（create_agent 的内核）；v12 才是主角
+#
+# 老几样继续保持：openai（传输层）/ python-dotenv / rich
+langchain>=1.0.0
+langchain-core>=1.0.0
+langchain-openai>=1.0.0
+langgraph>=1.0.0
+openai>=1.30.0
+python-dotenv>=1.0.0
+rich>=13.0.0
