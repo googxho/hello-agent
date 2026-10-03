@@ -24,6 +24,8 @@
 | v3 摘要压缩 | Claude Code 的 `/compact`、LangChain `ConversationSummaryBufferMemory` | 结构几乎一样；你多了「压缩成本」的显式记账 |
 | v4 会话存盘 | LangGraph checkpointer、ChatGPT/Claude 的会话历史 | 它们存在数据库里，你存在 JSON 里 —— **思路完全相同** |
 | v5 本地检索 | LlamaIndex、向量库生态 | 你大概会先用最土的办法，这是对的 |
+| v11 LangChain 组件层 | langchain-core 官方零件 | 你手写过的每个零件，都能对上一个官方类 |
+| v12 LangGraph 编排层 | LangGraph 官方（状态图 / 检查点 / interrupt） | 「断点恢复 + 人工审批」就是你 v10 想要、但没能力手写的东西 —— 它出厂自带 |
 
 **结论先给你**：你走过的这条路，是社区方案的**同一条路**，
 只是每一步都小得多、清楚得多。这就是这个项目的意义。
@@ -443,7 +445,7 @@ CoT（在文字里想）→ ReAct（边想边做）→ Plan-and-Execute（先想
 
 ---
 
-## 09 ~ 14 · 先扫一眼（以后再来）
+## 09 ~ 12 · 先扫一眼（以 concepts/ 文档交付，代码版未做）
 
 | 块 | 社区里比较有代表性的东西 | 一句话 |
 |---|---|---|
@@ -451,7 +453,51 @@ CoT（在文字里想）→ ReAct（边想边做）→ Plan-and-Execute（先想
 | 10 流式与人机协同 | 各家 streaming API、LangGraph 的 `interrupt`、Vercel AI SDK | 流式的难点在 `tool_calls` 是分片到达的，要自己拼 |
 | 11 多 Agent 协作 | AutoGen、CrewAI、OpenAI Agents SDK | **最容易过度使用的一块**，先确认单个 Agent 真的不行 |
 | 12 MCP 工具生态 | Model Context Protocol（Anthropic 发起）+ 大量现成 server | 工具不用自己写了 —— 但「工具描述写不好」这个基本功照样要练 |
-| 13 框架化 | LangChain / LangGraph / LlamaIndex / Pydantic AI / DSPy | 上不上框架**看信号，不看版本号**（ROADMAP 里列了四个信号）|
+
+---
+
+## 13 · 框架化（LangChain / LangGraph）
+
+**社区的共同思路**
+
+手写循环到一定复杂度后，「快照 / 恢复 / 暂停 / 换路」这些**状态管理基础设施**
+需要专门造一遍。社区收敛出的分工是**两层**：
+
+- **组件层**：消息 / 工具 / 模型调用 标准化 —— 让「换供应商」「组合流程」有共同语言
+- **编排层**：显式状态图 + 检查点 + 人机协同 —— 把控制权从模型手里拿回来
+
+**代表方案（按派别，不是产品清单）**
+
+| 派别 | 代表 | 思路 |
+|---|---|---|
+| 组件派 | LangChain / LlamaIndex | 把零件做标准，自由组合（链条式） |
+| 编排派 | LangGraph | 显式图 + 快照持久化（durable execution 思路） |
+| 类型派 | Pydantic AI / DSPy | 用类型系统 / 编译思路约束流程 |
+| 自研派 | Claude Code 等大厂产品 | 控制粒度是命脉：自己的循环、自己管状态 |
+
+**⭐ 和我的 v11 / v12 对照**
+
+- **v11（组件层）**：七个 demo ≈ langchain-core 的官方积木课 ——
+  差别在于「每个零件我都手写过一遍」（v1~v10 的对应物全都能对上）
+- **v12（编排层）**：七节点图 ≈ LangGraph 的教科书用法；
+  额外多做的：`--sabotage` / `--pause-at` / `durability-lab`
+  这类「可破坏演示」是教学专属，社区样例里少见
+- **实测撞出来的坑，和社区认知完全对得上**：interrupt 恢复时节点重跑、
+  durability 三档的取舍、消息序列形态 …… 这些正是「上了框架才知道」的东西
+  —— 手写过的 v10 让每个坑都有「自己如果写会怎么错」的参照
+- **诚实结论**：「检查点 + 恢复」这一块，自研的成本开始超过框架 ——
+  这就是 ROADMAP 里那几个「该上框架的信号」在实测中的样子
+
+> **据我了解（2026-10 核对）**：LangChain 1.x 与 LangGraph 1.x 的
+> 边界已经比早期版本清晰（`create_agent` 门面背后就是 LangGraph 图）。
+> 本领域变化快，以上按「思路类别」使用，具体 API 请以官方文档为准。
+
+---
+
+## 14 · 成本与部署（下一版）
+
+| 块 | 社区里比较有代表性的东西 | 一句话 |
+|---|---|---|
 | 14 成本与部署 | prompt caching、vLLM、Ollama、批处理 API | 到这一步，你才会真正在乎「缓存命中率」这种词 |
 
 ---

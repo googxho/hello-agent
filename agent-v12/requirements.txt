@@ -1,0 +1,18 @@
+# hello-agent v12 的依赖 —— 编排层（LangGraph）为主线：
+#
+#   langgraph                  —— 状态图 / 检查点 / interrupt（本版的主角）
+#   langgraph-checkpoint-sqlite—— SqliteSaver：检查点落盘（跨进程恢复的关键）
+#   langchain-core             —— 消息/工具协议（v11 的零件继续用）
+#   langchain-openai           —— ChatOpenAI
+#   langchain-deepseek         —— ⚠️ 备用：如果遇到 DeepSeek thinking 相关的
+#                                 兼容问题可切到 ChatDeepSeek（本版实测用
+#                                 langchain-openai 已够；见 README「诚实的话」）
+#
+# 老几样：openai / python-dotenv / rich
+langgraph>=1.0.0
+langgraph-checkpoint-sqlite>=2.0.0
+langchain-core>=1.0.0
+langchain-openai>=1.0.0
+openai>=1.30.0
+python-dotenv>=1.0.0
+rich>=13.0.0
