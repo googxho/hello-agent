@@ -20,5 +20,6 @@ agent-v*/session.json*
 agent-v*/embedding-cache.json*
 
 # v9 起：评估运行记录（每次跑都会变；对比靠磁盘上最新一份，不进版本库）
-agent-v9/runs/
+# v10 起做成通配：以后每个版本的 runs/ 都自动忽略
+agent-v*/runs/
 .vscode/
